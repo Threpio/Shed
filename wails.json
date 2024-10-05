@@ -1,0 +1,13 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Scheduling Tool",
+  "outputfilename": "Scheduling Tool",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Theo Andresier",
+    "email": "49570057+Threpio@users.noreply.github.com"
+  }
+}
