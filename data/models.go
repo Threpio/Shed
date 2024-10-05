@@ -4,106 +4,57 @@
 
 package data
 
-import (
-	"database/sql/driver"
-	"fmt"
-
-	"github.com/jackc/pgx/v5/pgtype"
-)
-
-type PlayCategories string
-
-const (
-	PlayCategoriesOpen      PlayCategories = "Open"
-	PlayCategoriesMixed     PlayCategories = "Mixed"
-	PlayCategoriesWomenPlus PlayCategories = "WomenPlus"
-	PlayCategoriesOther     PlayCategories = "Other"
-)
-
-func (e *PlayCategories) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = PlayCategories(s)
-	case string:
-		*e = PlayCategories(s)
-	default:
-		return fmt.Errorf("unsupported scan type for PlayCategories: %T", src)
-	}
-	return nil
-}
-
-type NullPlayCategories struct {
-	PlayCategories PlayCategories
-	Valid          bool // Valid is true if PlayCategories is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullPlayCategories) Scan(value interface{}) error {
-	if value == nil {
-		ns.PlayCategories, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.PlayCategories.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullPlayCategories) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.PlayCategories), nil
-}
+import ()
 
 type Competition struct {
-	ID       int32
+	ID       interface{}
 	Name     string
 	Instance string
 }
 
 type CompetitionDay struct {
-	ID            int32
-	CompetitionID int32
+	ID            interface{}
+	CompetitionID int64
 	Day           string
 }
 
 type Match struct {
-	Uuid      pgtype.UUID
-	RoundUuid pgtype.UUID
-	RefsID    int32
-	Team1ID   int32
-	Team2ID   int32
-	Court     int32
+	Uuid      interface{}
+	RoundUuid interface{}
+	RefsID    int64
+	Team1ID   int64
+	Team2ID   int64
+	Court     int64
 }
 
 type ParentOrganisation struct {
-	ID   int32
+	ID   interface{}
 	Name string
 }
 
 type Ref struct {
-	ID                 int32
+	ID                 interface{}
 	Name               string
-	ParentOrganisation int32
-	PlayCategory       PlayCategories
-	CompetitionDays    int32
+	ParentOrganisation int64
+	PlayCategory       string
+	CompetitionDays    int64
 }
 
 type Round struct {
-	Uuid             pgtype.UUID
-	Number           int32
-	CompetitionDayID int32
+	Uuid             interface{}
+	Number           int64
+	CompetitionDayID int64
 }
 
 type Team struct {
-	ID                   int32
+	ID                   interface{}
 	Name                 string
-	CompetitionID        int32
-	ParentOrganisationID int32
-	PlayCategory         PlayCategories
+	CompetitionID        int64
+	ParentOrganisationID int64
+	PlayCategory         interface{}
 }
 
 type TeamParticipation struct {
-	TeamID           int32
-	CompetitionDayID int32
+	TeamID           int64
+	CompetitionDayID int64
 }

@@ -1,30 +1,26 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE TABLE competitions (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    instance VARCHAR(255) NOT NULL
+    name TEXT NOT NULL,
+    instance TEXT NOT NULL
 );
 
 CREATE TABLE competition_days (
     id SERIAL PRIMARY KEY,
     competition_id INT NOT NULL,
-    day VARCHAR(255) NOT NULL,
+    day TEXT NOT NULL,
     FOREIGN KEY (competition_id) REFERENCES competitions(id)
 );
 
 CREATE TABLE parent_organisations (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name TEXT NOT NULL
 );
-
-CREATE TYPE PLAY_CATEGORIES AS ENUM ('Open', 'Mixed', 'WomenPlus', 'Other');
 
 CREATE TABLE refs (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name TEXT NOT NULL,
     parent_organisation INT NOT NULL,
-    play_category PLAY_CATEGORIES NOT NULL,
+    play_category TEXT CHECK( play_category IN ('Mixed','Open','WomensPlus')) NOT NULL,
     competition_days INT NOT NULL,
     FOREIGN KEY (parent_organisation) REFERENCES parent_organisations(id),
     FOREIGN KEY (competition_days) REFERENCES competition_days(id)
@@ -32,7 +28,7 @@ CREATE TABLE refs (
 
 CREATE TABLE teams (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name TEXT NOT NULL,
     competition_id INT NOT NULL,
     parent_organisation_id INT NOT NULL,
     play_category PLAY_CATEGORIES NOT NULL,
@@ -48,15 +44,15 @@ CREATE TABLE team_participation (
     FOREIGN KEY (competition_day_id) REFERENCES competition_days(id)
 );
 
-CREATE TABLE Rounds (
-    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE rounds (
+    uuid UUID PRIMARY KEY,
     number INT NOT NULL,
     competition_day_id INT NOT NULL,
     FOREIGN KEY (competition_day_id) REFERENCES competition_days(id)
 );
 
-CREATE TABLE Matches (
-    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE matches (
+                         uuid UUID PRIMARY KEY,
     round_uuid UUID NOT NULL,
     refs_id INT NOT NULL,
     team1_id INT NOT NULL,
