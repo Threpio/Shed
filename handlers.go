@@ -39,7 +39,7 @@ func RHandlerCompetitionCreate(comp *ICompetition) func(c *gin.Context) {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(200, insertedCompetition)
+		c.JSON(201, insertedCompetition)
 	}
 }
 
@@ -78,6 +78,52 @@ func RHandlerCompetitionDayCreate(compDay *ICompetitionDay) func(c *gin.Context)
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(200, insertedCompetitionDay)
+		c.JSON(201, insertedCompetitionDay)
+	}
+}
+
+func RHandlerCompetitionDayList(compDay *ICompetitionDay) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		print("List")
+		list, err := compDay.List(context.Background())
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, list)
+	}
+}
+
+func RHandlerParentOrgCreate(parentOrg *IParentOrg) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		print("Create parent org: ")
+
+		var HCreateParentOrgBody HParentOrgCreateBody
+		err := c.ShouldBindBodyWithJSON(&HCreateParentOrgBody)
+		if err != nil {
+			print(err.Error())
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+
+		insertedParentOrg, err := parentOrg.Create(context.Background(), HCreateParentOrgBody)
+		if err != nil {
+			print(err.Error())
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(201, insertedParentOrg)
+	}
+}
+
+func RHandlerParentOrgList(parentOrg *IParentOrg) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		print("List")
+		list, err := parentOrg.List(context.Background())
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, list)
 	}
 }

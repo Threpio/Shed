@@ -7,21 +7,23 @@ package data
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const deleteRound = `-- name: DeleteRound :exec
 DELETE FROM rounds
-WHERE uuid = ?
+WHERE uuid = $1
 `
 
-func (q *Queries) DeleteRound(ctx context.Context, uuid interface{}) error {
-	_, err := q.db.ExecContext(ctx, deleteRound, uuid)
+func (q *Queries) DeleteRound(ctx context.Context, uuid pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteRound, uuid)
 	return err
 }
 
 const deleteTeamParticipation = `-- name: DeleteTeamParticipation :exec
 DELETE FROM team_participation
-WHERE team_id = ? AND competition_day_id = ?
+WHERE team_id = $1 AND competition_day_id = $2
 `
 
 type DeleteTeamParticipationParams struct {
@@ -30,17 +32,17 @@ type DeleteTeamParticipationParams struct {
 }
 
 func (q *Queries) DeleteTeamParticipation(ctx context.Context, arg DeleteTeamParticipationParams) error {
-	_, err := q.db.ExecContext(ctx, deleteTeamParticipation, arg.TeamID, arg.CompetitionDayID)
+	_, err := q.db.Exec(ctx, deleteTeamParticipation, arg.TeamID, arg.CompetitionDayID)
 	return err
 }
 
 const getCompetitionByID = `-- name: GetCompetitionByID :one
 SELECT id, name, instance FROM competitions
-WHERE id = ? LIMIT 1
+WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetCompetitionByID(ctx context.Context, id int64) (Competition, error) {
-	row := q.db.QueryRowContext(ctx, getCompetitionByID, id)
+	row := q.db.QueryRow(ctx, getCompetitionByID, id)
 	var i Competition
 	err := row.Scan(&i.ID, &i.Name, &i.Instance)
 	return i, err
@@ -48,11 +50,11 @@ func (q *Queries) GetCompetitionByID(ctx context.Context, id int64) (Competition
 
 const getCompetitionByName = `-- name: GetCompetitionByName :one
 SELECT id, name, instance FROM competitions
-WHERE name = ? LIMIT 1
+WHERE name = $1 LIMIT 1
 `
 
 func (q *Queries) GetCompetitionByName(ctx context.Context, name string) (Competition, error) {
-	row := q.db.QueryRowContext(ctx, getCompetitionByName, name)
+	row := q.db.QueryRow(ctx, getCompetitionByName, name)
 	var i Competition
 	err := row.Scan(&i.ID, &i.Name, &i.Instance)
 	return i, err
@@ -60,11 +62,11 @@ func (q *Queries) GetCompetitionByName(ctx context.Context, name string) (Compet
 
 const getCompetitionDayByID = `-- name: GetCompetitionDayByID :one
 SELECT id, competition_id, day FROM competition_days
-WHERE id = ? LIMIT 1
+WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetCompetitionDayByID(ctx context.Context, id int64) (CompetitionDay, error) {
-	row := q.db.QueryRowContext(ctx, getCompetitionDayByID, id)
+	row := q.db.QueryRow(ctx, getCompetitionDayByID, id)
 	var i CompetitionDay
 	err := row.Scan(&i.ID, &i.CompetitionID, &i.Day)
 	return i, err
@@ -89,25 +91,25 @@ FROM matches M
          JOIN teams T1 ON M.team1_id = T1.id
          JOIN teams T2 ON M.team2_id = T2.id
          JOIN refs R ON M.refs_id = R.id
-WHERE CD.id = ?
+WHERE CD.id = $1
 `
 
 type GetMatchByCompetitionDayIDRow struct {
-	MatchID        interface{}
+	MatchID        pgtype.UUID
 	Team1ID        int64
 	Team1Name      string
 	Team2ID        int64
 	Team2Name      string
-	Court          int64
+	Court          int32
 	RefsID         int64
 	RefName        string
 	PlayCategory   string
 	CompetitionDay string
-	RoundNumber    int64
+	RoundNumber    int32
 }
 
 func (q *Queries) GetMatchByCompetitionDayID(ctx context.Context, id int64) ([]GetMatchByCompetitionDayIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, getMatchByCompetitionDayID, id)
+	rows, err := q.db.Query(ctx, getMatchByCompetitionDayID, id)
 	if err != nil {
 		return nil, err
 	}
@@ -132,9 +134,6 @@ func (q *Queries) GetMatchByCompetitionDayID(ctx context.Context, id int64) ([]G
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -143,11 +142,11 @@ func (q *Queries) GetMatchByCompetitionDayID(ctx context.Context, id int64) ([]G
 
 const getMatchByID = `-- name: GetMatchByID :one
 SELECT uuid, round_uuid, refs_id, team1_id, team2_id, court FROM matches
-WHERE uuid = ? LIMIT 1
+WHERE uuid = $1 LIMIT 1
 `
 
-func (q *Queries) GetMatchByID(ctx context.Context, uuid interface{}) (Match, error) {
-	row := q.db.QueryRowContext(ctx, getMatchByID, uuid)
+func (q *Queries) GetMatchByID(ctx context.Context, uuid pgtype.UUID) (Match, error) {
+	row := q.db.QueryRow(ctx, getMatchByID, uuid)
 	var i Match
 	err := row.Scan(
 		&i.Uuid,
@@ -162,11 +161,11 @@ func (q *Queries) GetMatchByID(ctx context.Context, uuid interface{}) (Match, er
 
 const getParentOrganisationByID = `-- name: GetParentOrganisationByID :one
 SELECT id, name FROM parent_organisations
-WHERE id = ? LIMIT 1
+WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetParentOrganisationByID(ctx context.Context, id int64) (ParentOrganisation, error) {
-	row := q.db.QueryRowContext(ctx, getParentOrganisationByID, id)
+	row := q.db.QueryRow(ctx, getParentOrganisationByID, id)
 	var i ParentOrganisation
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
@@ -174,11 +173,11 @@ func (q *Queries) GetParentOrganisationByID(ctx context.Context, id int64) (Pare
 
 const getParentOrganisationByName = `-- name: GetParentOrganisationByName :one
 SELECT id, name FROM parent_organisations
-WHERE name = ? LIMIT 1
+WHERE name = $1 LIMIT 1
 `
 
 func (q *Queries) GetParentOrganisationByName(ctx context.Context, name string) (ParentOrganisation, error) {
-	row := q.db.QueryRowContext(ctx, getParentOrganisationByName, name)
+	row := q.db.QueryRow(ctx, getParentOrganisationByName, name)
 	var i ParentOrganisation
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
@@ -186,11 +185,11 @@ func (q *Queries) GetParentOrganisationByName(ctx context.Context, name string) 
 
 const getRefByID = `-- name: GetRefByID :one
 SELECT id, name, parent_organisation, play_category, competition_days FROM refs
-WHERE id = ? LIMIT 1
+WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetRefByID(ctx context.Context, id int64) (Ref, error) {
-	row := q.db.QueryRowContext(ctx, getRefByID, id)
+	row := q.db.QueryRow(ctx, getRefByID, id)
 	var i Ref
 	err := row.Scan(
 		&i.ID,
@@ -204,11 +203,11 @@ func (q *Queries) GetRefByID(ctx context.Context, id int64) (Ref, error) {
 
 const getRoundByID = `-- name: GetRoundByID :one
 SELECT uuid, number, competition_day_id FROM rounds
-WHERE uuid = ? LIMIT 1
+WHERE uuid = $1 LIMIT 1
 `
 
-func (q *Queries) GetRoundByID(ctx context.Context, uuid interface{}) (Round, error) {
-	row := q.db.QueryRowContext(ctx, getRoundByID, uuid)
+func (q *Queries) GetRoundByID(ctx context.Context, uuid pgtype.UUID) (Round, error) {
+	row := q.db.QueryRow(ctx, getRoundByID, uuid)
 	var i Round
 	err := row.Scan(&i.Uuid, &i.Number, &i.CompetitionDayID)
 	return i, err
@@ -216,11 +215,11 @@ func (q *Queries) GetRoundByID(ctx context.Context, uuid interface{}) (Round, er
 
 const getTeamByID = `-- name: GetTeamByID :one
 SELECT id, name, competition_id, parent_organisation_id, play_category FROM teams
-WHERE id = ? LIMIT 1
+WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetTeamByID(ctx context.Context, id int64) (Team, error) {
-	row := q.db.QueryRowContext(ctx, getTeamByID, id)
+	row := q.db.QueryRow(ctx, getTeamByID, id)
 	var i Team
 	err := row.Scan(
 		&i.ID,
@@ -243,7 +242,7 @@ FROM team_participation TP
          JOIN teams T ON TP.team_id = T.id
          JOIN competition_days CD ON TP.competition_day_id = CD.id
          JOIN parent_organisations PO ON T.parent_organisation_id = PO.id
-WHERE CD.id = ?
+WHERE CD.id = $1
 `
 
 type GetTeamParticipationByCompetitionDayIDRow struct {
@@ -255,7 +254,7 @@ type GetTeamParticipationByCompetitionDayIDRow struct {
 }
 
 func (q *Queries) GetTeamParticipationByCompetitionDayID(ctx context.Context, id int64) ([]GetTeamParticipationByCompetitionDayIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, getTeamParticipationByCompetitionDayID, id)
+	rows, err := q.db.Query(ctx, getTeamParticipationByCompetitionDayID, id)
 	if err != nil {
 		return nil, err
 	}
@@ -274,9 +273,6 @@ func (q *Queries) GetTeamParticipationByCompetitionDayID(ctx context.Context, id
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -286,7 +282,7 @@ func (q *Queries) GetTeamParticipationByCompetitionDayID(ctx context.Context, id
 const insertCompetition = `-- name: InsertCompetition :one
 INSERT INTO competitions (
     name, instance
-) VALUES (?, ?)
+) VALUES ($1, $2)
 RETURNING id, name, instance
 `
 
@@ -296,7 +292,7 @@ type InsertCompetitionParams struct {
 }
 
 func (q *Queries) InsertCompetition(ctx context.Context, arg InsertCompetitionParams) (Competition, error) {
-	row := q.db.QueryRowContext(ctx, insertCompetition, arg.Name, arg.Instance)
+	row := q.db.QueryRow(ctx, insertCompetition, arg.Name, arg.Instance)
 	var i Competition
 	err := row.Scan(&i.ID, &i.Name, &i.Instance)
 	return i, err
@@ -305,7 +301,7 @@ func (q *Queries) InsertCompetition(ctx context.Context, arg InsertCompetitionPa
 const insertCompetitionDay = `-- name: InsertCompetitionDay :one
 INSERT INTO competition_days (
     competition_id, day
-) VALUES (?, ?)
+) VALUES ($1, $2)
 RETURNING id, competition_id, day
 `
 
@@ -315,7 +311,7 @@ type InsertCompetitionDayParams struct {
 }
 
 func (q *Queries) InsertCompetitionDay(ctx context.Context, arg InsertCompetitionDayParams) (CompetitionDay, error) {
-	row := q.db.QueryRowContext(ctx, insertCompetitionDay, arg.CompetitionID, arg.Day)
+	row := q.db.QueryRow(ctx, insertCompetitionDay, arg.CompetitionID, arg.Day)
 	var i CompetitionDay
 	err := row.Scan(&i.ID, &i.CompetitionID, &i.Day)
 	return i, err
@@ -324,20 +320,20 @@ func (q *Queries) InsertCompetitionDay(ctx context.Context, arg InsertCompetitio
 const insertMatch = `-- name: InsertMatch :one
 INSERT INTO matches (
     round_uuid, refs_id, team1_id, team2_id, court)
-VALUES (?, ?, ?, ?, ?)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING uuid, round_uuid, refs_id, team1_id, team2_id, court
 `
 
 type InsertMatchParams struct {
-	RoundUuid interface{}
+	RoundUuid pgtype.UUID
 	RefsID    int64
 	Team1ID   int64
 	Team2ID   int64
-	Court     int64
+	Court     int32
 }
 
 func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match, error) {
-	row := q.db.QueryRowContext(ctx, insertMatch,
+	row := q.db.QueryRow(ctx, insertMatch,
 		arg.RoundUuid,
 		arg.RefsID,
 		arg.Team1ID,
@@ -359,12 +355,12 @@ func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match
 const insertParentOrganisation = `-- name: InsertParentOrganisation :one
 INSERT INTO parent_organisations (
     name
-) VALUES (?)
+) VALUES ($1)
 RETURNING id, name
 `
 
 func (q *Queries) InsertParentOrganisation(ctx context.Context, name string) (ParentOrganisation, error) {
-	row := q.db.QueryRowContext(ctx, insertParentOrganisation, name)
+	row := q.db.QueryRow(ctx, insertParentOrganisation, name)
 	var i ParentOrganisation
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
@@ -373,7 +369,7 @@ func (q *Queries) InsertParentOrganisation(ctx context.Context, name string) (Pa
 const insertRef = `-- name: InsertRef :one
 INSERT INTO refs (
     name, parent_organisation, play_category, competition_days
-) VALUES (?, ?, ?, ?)
+) VALUES ($1, $2, $3, $4)
 RETURNING id, name, parent_organisation, play_category, competition_days
 `
 
@@ -385,7 +381,7 @@ type InsertRefParams struct {
 }
 
 func (q *Queries) InsertRef(ctx context.Context, arg InsertRefParams) (Ref, error) {
-	row := q.db.QueryRowContext(ctx, insertRef,
+	row := q.db.QueryRow(ctx, insertRef,
 		arg.Name,
 		arg.ParentOrganisation,
 		arg.PlayCategory,
@@ -405,17 +401,17 @@ func (q *Queries) InsertRef(ctx context.Context, arg InsertRefParams) (Ref, erro
 const insertRound = `-- name: InsertRound :one
 INSERT INTO rounds (
     number, competition_day_id
-) VALUES (?, ?)
+) VALUES ($1, $2)
 RETURNING uuid, number, competition_day_id
 `
 
 type InsertRoundParams struct {
-	Number           int64
+	Number           int32
 	CompetitionDayID int64
 }
 
 func (q *Queries) InsertRound(ctx context.Context, arg InsertRoundParams) (Round, error) {
-	row := q.db.QueryRowContext(ctx, insertRound, arg.Number, arg.CompetitionDayID)
+	row := q.db.QueryRow(ctx, insertRound, arg.Number, arg.CompetitionDayID)
 	var i Round
 	err := row.Scan(&i.Uuid, &i.Number, &i.CompetitionDayID)
 	return i, err
@@ -424,7 +420,7 @@ func (q *Queries) InsertRound(ctx context.Context, arg InsertRoundParams) (Round
 const insertTeam = `-- name: InsertTeam :one
 INSERT INTO teams (
     name, competition_id, parent_organisation_id, play_category
-) VALUES (?, ?, ?, ?)
+) VALUES ($1, $2, $3, $4)
 RETURNING id, name, competition_id, parent_organisation_id, play_category
 `
 
@@ -436,7 +432,7 @@ type InsertTeamParams struct {
 }
 
 func (q *Queries) InsertTeam(ctx context.Context, arg InsertTeamParams) (Team, error) {
-	row := q.db.QueryRowContext(ctx, insertTeam,
+	row := q.db.QueryRow(ctx, insertTeam,
 		arg.Name,
 		arg.CompetitionID,
 		arg.ParentOrganisationID,
@@ -456,7 +452,7 @@ func (q *Queries) InsertTeam(ctx context.Context, arg InsertTeamParams) (Team, e
 const insertTeamParticipation = `-- name: InsertTeamParticipation :one
 INSERT INTO team_participation (
     team_id, competition_day_id
-) VALUES (?, ?)
+) VALUES ($1, $2)
 RETURNING team_id, competition_day_id
 `
 
@@ -466,7 +462,7 @@ type InsertTeamParticipationParams struct {
 }
 
 func (q *Queries) InsertTeamParticipation(ctx context.Context, arg InsertTeamParticipationParams) (TeamParticipation, error) {
-	row := q.db.QueryRowContext(ctx, insertTeamParticipation, arg.TeamID, arg.CompetitionDayID)
+	row := q.db.QueryRow(ctx, insertTeamParticipation, arg.TeamID, arg.CompetitionDayID)
 	var i TeamParticipation
 	err := row.Scan(&i.TeamID, &i.CompetitionDayID)
 	return i, err
@@ -477,7 +473,7 @@ SELECT id, competition_id, day FROM competition_days limit 100
 `
 
 func (q *Queries) ListCompetitionDays(ctx context.Context) ([]CompetitionDay, error) {
-	rows, err := q.db.QueryContext(ctx, listCompetitionDays)
+	rows, err := q.db.Query(ctx, listCompetitionDays)
 	if err != nil {
 		return nil, err
 	}
@@ -489,9 +485,6 @@ func (q *Queries) ListCompetitionDays(ctx context.Context) ([]CompetitionDay, er
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -501,11 +494,11 @@ func (q *Queries) ListCompetitionDays(ctx context.Context) ([]CompetitionDay, er
 
 const listCompetitionDaysByCompetitionID = `-- name: ListCompetitionDaysByCompetitionID :many
 SELECT id, competition_id, day FROM competition_days
-WHERE competition_id = ? LIMIT 100
+WHERE competition_id = $1 LIMIT 100
 `
 
 func (q *Queries) ListCompetitionDaysByCompetitionID(ctx context.Context, competitionID int64) ([]CompetitionDay, error) {
-	rows, err := q.db.QueryContext(ctx, listCompetitionDaysByCompetitionID, competitionID)
+	rows, err := q.db.Query(ctx, listCompetitionDaysByCompetitionID, competitionID)
 	if err != nil {
 		return nil, err
 	}
@@ -517,9 +510,6 @@ func (q *Queries) ListCompetitionDaysByCompetitionID(ctx context.Context, compet
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -532,7 +522,7 @@ SELECT id, name, instance FROM competitions limit 100
 `
 
 func (q *Queries) ListCompetitions(ctx context.Context) ([]Competition, error) {
-	rows, err := q.db.QueryContext(ctx, listCompetitions)
+	rows, err := q.db.Query(ctx, listCompetitions)
 	if err != nil {
 		return nil, err
 	}
@@ -545,9 +535,6 @@ func (q *Queries) ListCompetitions(ctx context.Context) ([]Competition, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -559,7 +546,7 @@ SELECT uuid, round_uuid, refs_id, team1_id, team2_id, court FROM matches limit 1
 `
 
 func (q *Queries) ListMatches(ctx context.Context) ([]Match, error) {
-	rows, err := q.db.QueryContext(ctx, listMatches)
+	rows, err := q.db.Query(ctx, listMatches)
 	if err != nil {
 		return nil, err
 	}
@@ -578,9 +565,6 @@ func (q *Queries) ListMatches(ctx context.Context) ([]Match, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -590,11 +574,11 @@ func (q *Queries) ListMatches(ctx context.Context) ([]Match, error) {
 
 const listMatchesByRoundID = `-- name: ListMatchesByRoundID :many
 SELECT uuid, round_uuid, refs_id, team1_id, team2_id, court FROM matches
-WHERE round_uuid = ? limit 100
+WHERE round_uuid = $1 limit 100
 `
 
-func (q *Queries) ListMatchesByRoundID(ctx context.Context, roundUuid interface{}) ([]Match, error) {
-	rows, err := q.db.QueryContext(ctx, listMatchesByRoundID, roundUuid)
+func (q *Queries) ListMatchesByRoundID(ctx context.Context, roundUuid pgtype.UUID) ([]Match, error) {
+	rows, err := q.db.Query(ctx, listMatchesByRoundID, roundUuid)
 	if err != nil {
 		return nil, err
 	}
@@ -613,9 +597,6 @@ func (q *Queries) ListMatchesByRoundID(ctx context.Context, roundUuid interface{
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -628,7 +609,7 @@ SELECT id, name FROM parent_organisations limit 100
 `
 
 func (q *Queries) ListParentOrganisations(ctx context.Context) ([]ParentOrganisation, error) {
-	rows, err := q.db.QueryContext(ctx, listParentOrganisations)
+	rows, err := q.db.Query(ctx, listParentOrganisations)
 	if err != nil {
 		return nil, err
 	}
@@ -640,9 +621,6 @@ func (q *Queries) ListParentOrganisations(ctx context.Context) ([]ParentOrganisa
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -655,7 +633,7 @@ SELECT id, name, parent_organisation, play_category, competition_days FROM refs 
 `
 
 func (q *Queries) ListRefs(ctx context.Context) ([]Ref, error) {
-	rows, err := q.db.QueryContext(ctx, listRefs)
+	rows, err := q.db.Query(ctx, listRefs)
 	if err != nil {
 		return nil, err
 	}
@@ -673,9 +651,6 @@ func (q *Queries) ListRefs(ctx context.Context) ([]Ref, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -685,11 +660,11 @@ func (q *Queries) ListRefs(ctx context.Context) ([]Ref, error) {
 
 const listRefsByCompetitonDayID = `-- name: ListRefsByCompetitonDayID :many
 SELECT id, name, parent_organisation, play_category, competition_days FROM refs
-WHERE competition_days = ? limit 100
+WHERE competition_days = $1 limit 100
 `
 
 func (q *Queries) ListRefsByCompetitonDayID(ctx context.Context, competitionDays int64) ([]Ref, error) {
-	rows, err := q.db.QueryContext(ctx, listRefsByCompetitonDayID, competitionDays)
+	rows, err := q.db.Query(ctx, listRefsByCompetitonDayID, competitionDays)
 	if err != nil {
 		return nil, err
 	}
@@ -707,9 +682,6 @@ func (q *Queries) ListRefsByCompetitonDayID(ctx context.Context, competitionDays
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -722,7 +694,7 @@ SELECT uuid, number, competition_day_id FROM rounds limit 100
 `
 
 func (q *Queries) ListRounds(ctx context.Context) ([]Round, error) {
-	rows, err := q.db.QueryContext(ctx, listRounds)
+	rows, err := q.db.Query(ctx, listRounds)
 	if err != nil {
 		return nil, err
 	}
@@ -734,9 +706,6 @@ func (q *Queries) ListRounds(ctx context.Context) ([]Round, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -746,11 +715,11 @@ func (q *Queries) ListRounds(ctx context.Context) ([]Round, error) {
 
 const listRoundsByCompetitionDayID = `-- name: ListRoundsByCompetitionDayID :many
 SELECT uuid, number, competition_day_id FROM rounds
-WHERE competition_day_id = ? limit 100
+WHERE competition_day_id = $1 limit 100
 `
 
 func (q *Queries) ListRoundsByCompetitionDayID(ctx context.Context, competitionDayID int64) ([]Round, error) {
-	rows, err := q.db.QueryContext(ctx, listRoundsByCompetitionDayID, competitionDayID)
+	rows, err := q.db.Query(ctx, listRoundsByCompetitionDayID, competitionDayID)
 	if err != nil {
 		return nil, err
 	}
@@ -762,9 +731,6 @@ func (q *Queries) ListRoundsByCompetitionDayID(ctx context.Context, competitionD
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -777,7 +743,7 @@ SELECT team_id, competition_day_id FROM team_participation limit 100
 `
 
 func (q *Queries) ListTeamParticipation(ctx context.Context) ([]TeamParticipation, error) {
-	rows, err := q.db.QueryContext(ctx, listTeamParticipation)
+	rows, err := q.db.Query(ctx, listTeamParticipation)
 	if err != nil {
 		return nil, err
 	}
@@ -789,9 +755,6 @@ func (q *Queries) ListTeamParticipation(ctx context.Context) ([]TeamParticipatio
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -801,11 +764,11 @@ func (q *Queries) ListTeamParticipation(ctx context.Context) ([]TeamParticipatio
 
 const listTeamParticipationByCompetitionDayID = `-- name: ListTeamParticipationByCompetitionDayID :many
 SELECT team_id, competition_day_id FROM team_participation
-WHERE competition_day_id = ? limit 100
+WHERE competition_day_id = $1 limit 100
 `
 
 func (q *Queries) ListTeamParticipationByCompetitionDayID(ctx context.Context, competitionDayID int64) ([]TeamParticipation, error) {
-	rows, err := q.db.QueryContext(ctx, listTeamParticipationByCompetitionDayID, competitionDayID)
+	rows, err := q.db.Query(ctx, listTeamParticipationByCompetitionDayID, competitionDayID)
 	if err != nil {
 		return nil, err
 	}
@@ -817,9 +780,6 @@ func (q *Queries) ListTeamParticipationByCompetitionDayID(ctx context.Context, c
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -829,11 +789,11 @@ func (q *Queries) ListTeamParticipationByCompetitionDayID(ctx context.Context, c
 
 const listTeamParticipationByTeamID = `-- name: ListTeamParticipationByTeamID :many
 SELECT team_id, competition_day_id FROM team_participation
-WHERE team_id = ? limit 100
+WHERE team_id = $1 limit 100
 `
 
 func (q *Queries) ListTeamParticipationByTeamID(ctx context.Context, teamID int64) ([]TeamParticipation, error) {
-	rows, err := q.db.QueryContext(ctx, listTeamParticipationByTeamID, teamID)
+	rows, err := q.db.Query(ctx, listTeamParticipationByTeamID, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -845,9 +805,6 @@ func (q *Queries) ListTeamParticipationByTeamID(ctx context.Context, teamID int6
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -860,7 +817,7 @@ SELECT id, name, competition_id, parent_organisation_id, play_category FROM team
 `
 
 func (q *Queries) ListTeams(ctx context.Context) ([]Team, error) {
-	rows, err := q.db.QueryContext(ctx, listTeams)
+	rows, err := q.db.Query(ctx, listTeams)
 	if err != nil {
 		return nil, err
 	}
@@ -878,9 +835,6 @@ func (q *Queries) ListTeams(ctx context.Context) ([]Team, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -890,11 +844,11 @@ func (q *Queries) ListTeams(ctx context.Context) ([]Team, error) {
 
 const listTeamsByCompetitionID = `-- name: ListTeamsByCompetitionID :many
 SELECT id, name, competition_id, parent_organisation_id, play_category FROM teams
-WHERE competition_id = ? limit 100
+WHERE competition_id = $1 limit 100
 `
 
 func (q *Queries) ListTeamsByCompetitionID(ctx context.Context, competitionID int64) ([]Team, error) {
-	rows, err := q.db.QueryContext(ctx, listTeamsByCompetitionID, competitionID)
+	rows, err := q.db.Query(ctx, listTeamsByCompetitionID, competitionID)
 	if err != nil {
 		return nil, err
 	}
@@ -912,9 +866,6 @@ func (q *Queries) ListTeamsByCompetitionID(ctx context.Context, competitionID in
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -924,11 +875,11 @@ func (q *Queries) ListTeamsByCompetitionID(ctx context.Context, competitionID in
 
 const listTeamsByParentOrganisationID = `-- name: ListTeamsByParentOrganisationID :many
 SELECT id, name, competition_id, parent_organisation_id, play_category FROM teams
-WHERE parent_organisation_id = ? limit 100
+WHERE parent_organisation_id = $1 limit 100
 `
 
 func (q *Queries) ListTeamsByParentOrganisationID(ctx context.Context, parentOrganisationID int64) ([]Team, error) {
-	rows, err := q.db.QueryContext(ctx, listTeamsByParentOrganisationID, parentOrganisationID)
+	rows, err := q.db.Query(ctx, listTeamsByParentOrganisationID, parentOrganisationID)
 	if err != nil {
 		return nil, err
 	}
@@ -947,9 +898,6 @@ func (q *Queries) ListTeamsByParentOrganisationID(ctx context.Context, parentOrg
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -958,11 +906,11 @@ func (q *Queries) ListTeamsByParentOrganisationID(ctx context.Context, parentOrg
 
 const searchParentOrganisationByName = `-- name: SearchParentOrganisationByName :many
 SELECT id, name FROM parent_organisations
-WHERE name LIKE '%' || ? || '%' limit 100
+WHERE name LIKE '%' || $1 || '%' limit 100
 `
 
-func (q *Queries) SearchParentOrganisationByName(ctx context.Context, name string) ([]ParentOrganisation, error) {
-	rows, err := q.db.QueryContext(ctx, searchParentOrganisationByName, name)
+func (q *Queries) SearchParentOrganisationByName(ctx context.Context, dollar_1 pgtype.Text) ([]ParentOrganisation, error) {
+	rows, err := q.db.Query(ctx, searchParentOrganisationByName, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -975,9 +923,6 @@ func (q *Queries) SearchParentOrganisationByName(ctx context.Context, name strin
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -986,135 +931,135 @@ func (q *Queries) SearchParentOrganisationByName(ctx context.Context, name strin
 
 const updateCompetitionDay = `-- name: UpdateCompetitionDay :exec
 UPDATE competition_days SET
-    competition_id = ?,
-    day = ?
-WHERE id = ?
+    competition_id = $2,
+    day = $3
+WHERE id = $1
 `
 
 type UpdateCompetitionDayParams struct {
+	ID            int64
 	CompetitionID int64
 	Day           string
-	ID            int64
 }
 
 func (q *Queries) UpdateCompetitionDay(ctx context.Context, arg UpdateCompetitionDayParams) error {
-	_, err := q.db.ExecContext(ctx, updateCompetitionDay, arg.CompetitionID, arg.Day, arg.ID)
+	_, err := q.db.Exec(ctx, updateCompetitionDay, arg.ID, arg.CompetitionID, arg.Day)
 	return err
 }
 
 const updateCompetitions = `-- name: UpdateCompetitions :exec
 UPDATE competitions SET
-    name = ?,
-    instance = ?
-WHERE id = ?
+    name = $2,
+    instance = $3
+WHERE id = $1
 `
 
 type UpdateCompetitionsParams struct {
+	ID       int64
 	Name     string
 	Instance string
-	ID       int64
 }
 
 func (q *Queries) UpdateCompetitions(ctx context.Context, arg UpdateCompetitionsParams) error {
-	_, err := q.db.ExecContext(ctx, updateCompetitions, arg.Name, arg.Instance, arg.ID)
+	_, err := q.db.Exec(ctx, updateCompetitions, arg.ID, arg.Name, arg.Instance)
 	return err
 }
 
 const updateParentOrganisation = `-- name: UpdateParentOrganisation :exec
 UPDATE parent_organisations SET
-    name = ?
-WHERE id = ?
+    name = $2
+WHERE id = $1
 `
 
 type UpdateParentOrganisationParams struct {
-	Name string
 	ID   int64
+	Name string
 }
 
 func (q *Queries) UpdateParentOrganisation(ctx context.Context, arg UpdateParentOrganisationParams) error {
-	_, err := q.db.ExecContext(ctx, updateParentOrganisation, arg.Name, arg.ID)
+	_, err := q.db.Exec(ctx, updateParentOrganisation, arg.ID, arg.Name)
 	return err
 }
 
 const updateRef = `-- name: UpdateRef :exec
 UPDATE refs SET
-    name = ?,
-    parent_organisation = ?,
-    play_category = ?,
-    competition_days = ?
-WHERE id = ?
+    name = $2,
+    parent_organisation = $3,
+    play_category = $4,
+    competition_days = $5
+WHERE id = $1
 `
 
 type UpdateRefParams struct {
+	ID                 int64
 	Name               string
 	ParentOrganisation int64
 	PlayCategory       string
 	CompetitionDays    int64
-	ID                 int64
 }
 
 func (q *Queries) UpdateRef(ctx context.Context, arg UpdateRefParams) error {
-	_, err := q.db.ExecContext(ctx, updateRef,
+	_, err := q.db.Exec(ctx, updateRef,
+		arg.ID,
 		arg.Name,
 		arg.ParentOrganisation,
 		arg.PlayCategory,
 		arg.CompetitionDays,
-		arg.ID,
 	)
 	return err
 }
 
 const updateRound = `-- name: UpdateRound :exec
 UPDATE rounds SET
-    number = ?,
-    competition_day_id = ?
-WHERE uuid = ?
+    number = $2,
+    competition_day_id = $3
+WHERE uuid = $1
 `
 
 type UpdateRoundParams struct {
-	Number           int64
+	Uuid             pgtype.UUID
+	Number           int32
 	CompetitionDayID int64
-	Uuid             interface{}
 }
 
 func (q *Queries) UpdateRound(ctx context.Context, arg UpdateRoundParams) error {
-	_, err := q.db.ExecContext(ctx, updateRound, arg.Number, arg.CompetitionDayID, arg.Uuid)
+	_, err := q.db.Exec(ctx, updateRound, arg.Uuid, arg.Number, arg.CompetitionDayID)
 	return err
 }
 
 const updateTeam = `-- name: UpdateTeam :exec
 UPDATE teams SET
-    name = ?,
-    competition_id = ?,
-    parent_organisation_id = ?,
-    play_category = ?
-WHERE id = ?
+    name = $2,
+    competition_id = $3,
+    parent_organisation_id = $4,
+    play_category = $5
+WHERE id = $1
 `
 
 type UpdateTeamParams struct {
+	ID                   int64
 	Name                 string
 	CompetitionID        int64
 	ParentOrganisationID int64
 	PlayCategory         interface{}
-	ID                   int64
 }
 
 func (q *Queries) UpdateTeam(ctx context.Context, arg UpdateTeamParams) error {
-	_, err := q.db.ExecContext(ctx, updateTeam,
+	_, err := q.db.Exec(ctx, updateTeam,
+		arg.ID,
 		arg.Name,
 		arg.CompetitionID,
 		arg.ParentOrganisationID,
 		arg.PlayCategory,
-		arg.ID,
 	)
 	return err
 }
 
 const updateTeamParticipation = `-- name: UpdateTeamParticipation :exec
 UPDATE team_participation SET
-    team_id = ?,
-    competition_day_id = ?
-WHERE team_id = ? AND competition_day_id = ?
+    team_id = $3,
+    competition_day_id = $4
+WHERE team_id = $1 AND competition_day_id = $2
 `
 
 type UpdateTeamParticipationParams struct {
@@ -1125,7 +1070,7 @@ type UpdateTeamParticipationParams struct {
 }
 
 func (q *Queries) UpdateTeamParticipation(ctx context.Context, arg UpdateTeamParticipationParams) error {
-	_, err := q.db.ExecContext(ctx, updateTeamParticipation,
+	_, err := q.db.Exec(ctx, updateTeamParticipation,
 		arg.TeamID,
 		arg.CompetitionDayID,
 		arg.TeamID_2,

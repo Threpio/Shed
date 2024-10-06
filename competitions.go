@@ -56,13 +56,13 @@ func (c *ICompetition) Create(ctx context.Context, B HCompetitionCreateBody) (*H
 	return insertedCompetitionResponse, nil
 }
 
-func (c *ICompetition) List(ctx context.Context) (HCompetitionListResponse, error) {
+func (c *ICompetition) List(ctx context.Context) (*HCompetitionListResponse, error) {
 	print("List")
 	competitions, err := c.query.ListCompetitions(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return HCompetitionListResponse{
+	return &HCompetitionListResponse{
 		Competitions: competitions,
 	}, nil
 }

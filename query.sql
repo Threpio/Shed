@@ -1,7 +1,7 @@
 -- name: InsertCompetition :one
 INSERT INTO competitions (
     name, instance
-) VALUES (?, ?)
+) VALUES ($1, $2)
 RETURNING *;
 
 -- name: ListCompetitions :many
@@ -9,24 +9,24 @@ SELECT * FROM competitions limit 100;
 
 -- name: GetCompetitionByName :one
 SELECT * FROM competitions
-WHERE name = ? LIMIT 1;
+WHERE name = $1 LIMIT 1;
 
 -- name: GetCompetitionByID :one
 SELECT * FROM competitions
-WHERE id = ? LIMIT 1;
+WHERE id = $1 LIMIT 1;
 
 -- name: UpdateCompetitions :exec
 UPDATE competitions SET
-    name = ?,
-    instance = ?
-WHERE id = ?;
+    name = $2,
+    instance = $3
+WHERE id = $1;
 
 
 
 -- name: InsertCompetitionDay :one
 INSERT INTO competition_days (
     competition_id, day
-) VALUES (?, ?)
+) VALUES ($1, $2)
 RETURNING *;
 
 -- name: ListCompetitionDays :many
@@ -34,24 +34,24 @@ SELECT * FROM competition_days limit 100;
 
 -- name: ListCompetitionDaysByCompetitionID :many
 SELECT * FROM competition_days
-WHERE competition_id = ? LIMIT 100;
+WHERE competition_id = $1 LIMIT 100;
 
 -- name: GetCompetitionDayByID :one
 SELECT * FROM competition_days
-WHERE id = ? LIMIT 1;
+WHERE id = $1 LIMIT 1;
 
 -- name: UpdateCompetitionDay :exec
 UPDATE competition_days SET
-    competition_id = ?,
-    day = ?
-WHERE id = ?;
+    competition_id = $2,
+    day = $3
+WHERE id = $1;
 
 
 
 -- name: InsertParentOrganisation :one
 INSERT INTO parent_organisations (
     name
-) VALUES (?)
+) VALUES ($1)
 RETURNING *;
 
 -- name: ListParentOrganisations :many
@@ -59,27 +59,27 @@ SELECT * FROM parent_organisations limit 100;
 
 -- name: GetParentOrganisationByID :one
 SELECT * FROM parent_organisations
-WHERE id = ? LIMIT 1;
+WHERE id = $1 LIMIT 1;
 
 -- name: GetParentOrganisationByName :one
 SELECT * FROM parent_organisations
-WHERE name = ? LIMIT 1;
+WHERE name = $1 LIMIT 1;
 
 -- name: SearchParentOrganisationByName :many
 SELECT * FROM parent_organisations
-WHERE name LIKE '%' || ? || '%' limit 100;
+WHERE name LIKE '%' || $1 || '%' limit 100;
 
 -- name: UpdateParentOrganisation :exec
 UPDATE parent_organisations SET
-    name = ?
-WHERE id = ?;
+    name = $2
+WHERE id = $1;
 
 
 
 -- name: InsertRef :one
 INSERT INTO refs (
     name, parent_organisation, play_category, competition_days
-) VALUES (?, ?, ?, ?)
+) VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: ListRefs :many
@@ -87,26 +87,26 @@ SELECT * FROM refs limit 100;
 
 -- name: ListRefsByCompetitonDayID :many
 SELECT * FROM refs
-WHERE competition_days = ? limit 100;
+WHERE competition_days = $1 limit 100;
 
 -- name: GetRefByID :one
 SELECT * FROM refs
-WHERE id = ? LIMIT 1;
+WHERE id = $1 LIMIT 1;
 
 -- name: UpdateRef :exec
 UPDATE refs SET
-    name = ?,
-    parent_organisation = ?,
-    play_category = ?,
-    competition_days = ?
-WHERE id = ?;
+    name = $2,
+    parent_organisation = $3,
+    play_category = $4,
+    competition_days = $5
+WHERE id = $1;
 
 
 
 -- name: InsertTeam :one
 INSERT INTO teams (
     name, competition_id, parent_organisation_id, play_category
-) VALUES (?, ?, ?, ?)
+) VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: ListTeams :many
@@ -114,30 +114,30 @@ SELECT * FROM teams limit 100;
 
 -- name: ListTeamsByCompetitionID :many
 SELECT * FROM teams
-WHERE competition_id = ? limit 100;
+WHERE competition_id = $1 limit 100;
 
 -- name: ListTeamsByParentOrganisationID :many
 SELECT * FROM teams
-WHERE parent_organisation_id = ? limit 100;
+WHERE parent_organisation_id = $1 limit 100;
 
 -- name: GetTeamByID :one
 SELECT * FROM teams
-WHERE id = ? LIMIT 1;
+WHERE id = $1 LIMIT 1;
 
 -- name: UpdateTeam :exec
 UPDATE teams SET
-    name = ?,
-    competition_id = ?,
-    parent_organisation_id = ?,
-    play_category = ?
-WHERE id = ?;
+    name = $2,
+    competition_id = $3,
+    parent_organisation_id = $4,
+    play_category = $5
+WHERE id = $1;
 
 
 
 -- name: InsertTeamParticipation :one
 INSERT INTO team_participation (
     team_id, competition_day_id
-) VALUES (?, ?)
+) VALUES ($1, $2)
 RETURNING *;
 
 -- name: ListTeamParticipation :many
@@ -145,28 +145,28 @@ SELECT * FROM team_participation limit 100;
 
 -- name: ListTeamParticipationByTeamID :many
 SELECT * FROM team_participation
-WHERE team_id = ? limit 100;
+WHERE team_id = $1 limit 100;
 
 -- name: ListTeamParticipationByCompetitionDayID :many
 SELECT * FROM team_participation
-WHERE competition_day_id = ? limit 100;
+WHERE competition_day_id = $1 limit 100;
 
 -- name: UpdateTeamParticipation :exec
 UPDATE team_participation SET
-    team_id = ?,
-    competition_day_id = ?
-WHERE team_id = ? AND competition_day_id = ?;
+    team_id = $3,
+    competition_day_id = $4
+WHERE team_id = $1 AND competition_day_id = $2;
 
 -- name: DeleteTeamParticipation :exec
 DELETE FROM team_participation
-WHERE team_id = ? AND competition_day_id = ?;
+WHERE team_id = $1 AND competition_day_id = $2;
 
 
 
 -- name: InsertRound :one
 INSERT INTO rounds (
     number, competition_day_id
-) VALUES (?, ?)
+) VALUES ($1, $2)
 RETURNING *;
 
 -- name: ListRounds :many
@@ -174,28 +174,28 @@ SELECT * FROM rounds limit 100;
 
 -- name: ListRoundsByCompetitionDayID :many
 SELECT * FROM rounds
-WHERE competition_day_id = ? limit 100;
+WHERE competition_day_id = $1 limit 100;
 
 -- name: GetRoundByID :one
 SELECT * FROM rounds
-WHERE uuid = ? LIMIT 1;
+WHERE uuid = $1 LIMIT 1;
 
 -- name: UpdateRound :exec
 UPDATE rounds SET
-    number = ?,
-    competition_day_id = ?
-WHERE uuid = ?;
+    number = $2,
+    competition_day_id = $3
+WHERE uuid = $1;
 
 -- name: DeleteRound :exec
 DELETE FROM rounds
-WHERE uuid = ?;
+WHERE uuid = $1;
 
 
 
 -- name: InsertMatch :one
 INSERT INTO matches (
     round_uuid, refs_id, team1_id, team2_id, court)
-VALUES (?, ?, ?, ?, ?)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: ListMatches :many
@@ -203,11 +203,11 @@ SELECT * FROM matches limit 100;
 
 -- name: ListMatchesByRoundID :many
 SELECT * FROM matches
-WHERE round_uuid = ? limit 100;
+WHERE round_uuid = $1 limit 100;
 
 -- name: GetMatchByID :one
 SELECT * FROM matches
-WHERE uuid = ? LIMIT 1;
+WHERE uuid = $1 LIMIT 1;
 
 
 
@@ -233,7 +233,7 @@ FROM matches M
          JOIN teams T1 ON M.team1_id = T1.id
          JOIN teams T2 ON M.team2_id = T2.id
          JOIN refs R ON M.refs_id = R.id
-WHERE CD.id = ?;
+WHERE CD.id = $1;
 
 -- name: GetTeamParticipationByCompetitionDayID :many
 SELECT
@@ -246,7 +246,7 @@ FROM team_participation TP
          JOIN teams T ON TP.team_id = T.id
          JOIN competition_days CD ON TP.competition_day_id = CD.id
          JOIN parent_organisations PO ON T.parent_organisation_id = PO.id
-WHERE CD.id = ?;
+WHERE CD.id = $1;
 
 
 

@@ -4,7 +4,9 @@
 
 package data
 
-import ()
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
 
 type Competition struct {
 	ID       int64
@@ -19,12 +21,12 @@ type CompetitionDay struct {
 }
 
 type Match struct {
-	Uuid      interface{}
-	RoundUuid interface{}
+	Uuid      pgtype.UUID
+	RoundUuid pgtype.UUID
 	RefsID    int64
 	Team1ID   int64
 	Team2ID   int64
-	Court     int64
+	Court     int32
 }
 
 type ParentOrganisation struct {
@@ -41,8 +43,8 @@ type Ref struct {
 }
 
 type Round struct {
-	Uuid             interface{}
-	Number           int64
+	Uuid             pgtype.UUID
+	Number           int32
 	CompetitionDayID int64
 }
 
