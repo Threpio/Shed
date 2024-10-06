@@ -2,12 +2,21 @@
   import logo from './assets/images/logo-lugi-white.png'
   import {Greet} from '../wailsjs/go/main/App.js'
 
-  let resultText: string = "Please enter your name below 👇"
+  let resultText: string = "Please enter the competition name below 👇"
   let name: string
+  let create: string
+  let search: string
 
-  function greet(): void {
-    Greet(name).then(result => resultText = result)
+  // Function to alert the value of 'Create' input
+  function alertCreate() {
+    alert(`Create Input: ${create}`);
   }
+
+  // Function to alert the value of 'Search' input
+  function alertSearch() {
+    alert(`Search Input: ${search}`);
+  }
+
 </script>
 
 <main>
@@ -18,13 +27,13 @@
 <!--    <button class="btn" on:click={greet}>Greet</button>-->
 <!--    <button class="btn" on:click={greet}>Greet2</button>-->
 <!--  </div>-->
-  <div class="input-box" id="input">
-    <button class="btn">Create</button>
-    <input autocomplete="off" bind:value={name} class="input" id="name" type="text"/>
+  <div class="input-box" id="inputcreate">
+    <button class="btn" on:click={alertCreate}>Create</button>
+    <input autocomplete="off" bind:value={create} class="input" id="create" type="text"/>
   </div>
-  <div class="input-box" id="input">
-    <button class="btn">Find</button>
-    <input autocomplete="off" bind:value={name} class="input" id="name" type="text"/>
+  <div class="input-box" id="inputsearch">
+    <button class="btn" on:click={alertSearch}>Search</button>
+    <input autocomplete="off" bind:value={search} class="input" id="search" type="text"/>
   </div>
 </main>
 
@@ -32,8 +41,8 @@
 
   #logo {
     display: block;
-    width: 50%;
-    height: 50%;
+    width: 25%;
+    height: 25%;
     margin: auto;
     padding: 10% 0 0;
     background-position: center;
@@ -46,9 +55,11 @@
     height: 20px;
     line-height: 20px;
     margin: 1.5rem auto;
+    color: black;
   }
 
   .input-box .btn {
+    padding: 10%;
     width: 60px;
     height: 30px;
     line-height: 30px;
