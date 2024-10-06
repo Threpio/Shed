@@ -7,13 +7,13 @@ package data
 import ()
 
 type Competition struct {
-	ID       interface{}
+	ID       int64
 	Name     string
 	Instance string
 }
 
 type CompetitionDay struct {
-	ID            interface{}
+	ID            int64
 	CompetitionID int64
 	Day           string
 }
@@ -28,12 +28,12 @@ type Match struct {
 }
 
 type ParentOrganisation struct {
-	ID   interface{}
+	ID   int64
 	Name string
 }
 
 type Ref struct {
-	ID                 interface{}
+	ID                 int64
 	Name               string
 	ParentOrganisation int64
 	PlayCategory       string
@@ -47,7 +47,7 @@ type Round struct {
 }
 
 type Team struct {
-	ID                   interface{}
+	ID                   int64
 	Name                 string
 	CompetitionID        int64
 	ParentOrganisationID int64

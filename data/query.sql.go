@@ -39,7 +39,7 @@ SELECT id, name, instance FROM competitions
 WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) GetCompetitionByID(ctx context.Context, id interface{}) (Competition, error) {
+func (q *Queries) GetCompetitionByID(ctx context.Context, id int64) (Competition, error) {
 	row := q.db.QueryRowContext(ctx, getCompetitionByID, id)
 	var i Competition
 	err := row.Scan(&i.ID, &i.Name, &i.Instance)
@@ -63,7 +63,7 @@ SELECT id, competition_id, day FROM competition_days
 WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) GetCompetitionDayByID(ctx context.Context, id interface{}) (CompetitionDay, error) {
+func (q *Queries) GetCompetitionDayByID(ctx context.Context, id int64) (CompetitionDay, error) {
 	row := q.db.QueryRowContext(ctx, getCompetitionDayByID, id)
 	var i CompetitionDay
 	err := row.Scan(&i.ID, &i.CompetitionID, &i.Day)
@@ -106,7 +106,7 @@ type GetMatchByCompetitionDayIDRow struct {
 	RoundNumber    int64
 }
 
-func (q *Queries) GetMatchByCompetitionDayID(ctx context.Context, id interface{}) ([]GetMatchByCompetitionDayIDRow, error) {
+func (q *Queries) GetMatchByCompetitionDayID(ctx context.Context, id int64) ([]GetMatchByCompetitionDayIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, getMatchByCompetitionDayID, id)
 	if err != nil {
 		return nil, err
@@ -165,7 +165,7 @@ SELECT id, name FROM parent_organisations
 WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) GetParentOrganisationByID(ctx context.Context, id interface{}) (ParentOrganisation, error) {
+func (q *Queries) GetParentOrganisationByID(ctx context.Context, id int64) (ParentOrganisation, error) {
 	row := q.db.QueryRowContext(ctx, getParentOrganisationByID, id)
 	var i ParentOrganisation
 	err := row.Scan(&i.ID, &i.Name)
@@ -189,7 +189,7 @@ SELECT id, name, parent_organisation, play_category, competition_days FROM refs
 WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) GetRefByID(ctx context.Context, id interface{}) (Ref, error) {
+func (q *Queries) GetRefByID(ctx context.Context, id int64) (Ref, error) {
 	row := q.db.QueryRowContext(ctx, getRefByID, id)
 	var i Ref
 	err := row.Scan(
@@ -219,7 +219,7 @@ SELECT id, name, competition_id, parent_organisation_id, play_category FROM team
 WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) GetTeamByID(ctx context.Context, id interface{}) (Team, error) {
+func (q *Queries) GetTeamByID(ctx context.Context, id int64) (Team, error) {
 	row := q.db.QueryRowContext(ctx, getTeamByID, id)
 	var i Team
 	err := row.Scan(
@@ -247,14 +247,14 @@ WHERE CD.id = ?
 `
 
 type GetTeamParticipationByCompetitionDayIDRow struct {
-	TeamID                 interface{}
+	TeamID                 int64
 	TeamName               string
 	ParentOrganisationName string
 	PlayCategory           interface{}
 	CompetitionDay         string
 }
 
-func (q *Queries) GetTeamParticipationByCompetitionDayID(ctx context.Context, id interface{}) ([]GetTeamParticipationByCompetitionDayIDRow, error) {
+func (q *Queries) GetTeamParticipationByCompetitionDayID(ctx context.Context, id int64) ([]GetTeamParticipationByCompetitionDayIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, getTeamParticipationByCompetitionDayID, id)
 	if err != nil {
 		return nil, err
@@ -994,7 +994,7 @@ WHERE id = ?
 type UpdateCompetitionDayParams struct {
 	CompetitionID int64
 	Day           string
-	ID            interface{}
+	ID            int64
 }
 
 func (q *Queries) UpdateCompetitionDay(ctx context.Context, arg UpdateCompetitionDayParams) error {
@@ -1012,7 +1012,7 @@ WHERE id = ?
 type UpdateCompetitionsParams struct {
 	Name     string
 	Instance string
-	ID       interface{}
+	ID       int64
 }
 
 func (q *Queries) UpdateCompetitions(ctx context.Context, arg UpdateCompetitionsParams) error {
@@ -1028,7 +1028,7 @@ WHERE id = ?
 
 type UpdateParentOrganisationParams struct {
 	Name string
-	ID   interface{}
+	ID   int64
 }
 
 func (q *Queries) UpdateParentOrganisation(ctx context.Context, arg UpdateParentOrganisationParams) error {
@@ -1050,7 +1050,7 @@ type UpdateRefParams struct {
 	ParentOrganisation int64
 	PlayCategory       string
 	CompetitionDays    int64
-	ID                 interface{}
+	ID                 int64
 }
 
 func (q *Queries) UpdateRef(ctx context.Context, arg UpdateRefParams) error {
@@ -1096,7 +1096,7 @@ type UpdateTeamParams struct {
 	CompetitionID        int64
 	ParentOrganisationID int64
 	PlayCategory         interface{}
-	ID                   interface{}
+	ID                   int64
 }
 
 func (q *Queries) UpdateTeam(ctx context.Context, arg UpdateTeamParams) error {

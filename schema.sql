@@ -1,23 +1,23 @@
 CREATE TABLE competitions (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     instance TEXT NOT NULL
 );
 
 CREATE TABLE competition_days (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     competition_id INT NOT NULL,
     day TEXT NOT NULL,
     FOREIGN KEY (competition_id) REFERENCES competitions(id)
 );
 
 CREATE TABLE parent_organisations (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL
 );
 
 CREATE TABLE refs (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     parent_organisation INT NOT NULL,
     play_category TEXT CHECK( play_category IN ('Mixed','Open','WomensPlus')) NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE refs (
 );
 
 CREATE TABLE teams (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     competition_id INT NOT NULL,
     parent_organisation_id INT NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE rounds (
 );
 
 CREATE TABLE matches (
-                         uuid UUID PRIMARY KEY,
+    uuid UUID PRIMARY KEY,
     round_uuid UUID NOT NULL,
     refs_id INT NOT NULL,
     team1_id INT NOT NULL,
