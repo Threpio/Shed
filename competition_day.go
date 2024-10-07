@@ -7,18 +7,18 @@ import (
 )
 
 type HCompetitionDayCreateBody struct {
-	CompetitionID int64  `json:"competition_id"`
-	Day           string `json:"day"`
+	CompetitionID int64
+	Day           string
 }
 
 type HCompetitionDayCreateResponse struct {
-	ID            int64  `json:"id"`
-	CompetitionID int64  `json:"competition_id"`
-	Day           string `json:"day"`
+	ID            int64
+	CompetitionID int64
+	Day           string
 }
 
 type HCompetitionDayListResponse struct {
-	CompetitionDays []data.CompetitionDay `json:"competition_days"`
+	CompetitionDays []data.CompetitionDay
 }
 
 type ICompetitionDay struct {

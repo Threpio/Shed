@@ -7,16 +7,16 @@ import (
 )
 
 type HParentOrgCreateBody struct {
-	Name string `json:"namename"`
+	Name string
 }
 
 type HParentOrgCreateResponse struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID   int64
+	Name string
 }
 
 type HParentOrgListResponse struct {
-	ParentOrganisation []data.ParentOrganisation `json:"parent_organisations"`
+	ParentOrganisation []data.ParentOrganisation
 }
 
 type IParentOrg struct {

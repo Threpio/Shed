@@ -7,18 +7,18 @@ import (
 )
 
 type HCompetitionCreateBody struct {
-	Name     string `json:"name"`
-	Instance string `json:"instance"`
+	Name     string
+	Instance string
 }
 
 type HCompetitionCreateResponse struct {
-	ID       int64  `json:"id"`
-	Name     string `json:"name"`
-	Instance string `json:"instance"`
+	ID       int64
+	Name     string
+	Instance string
 }
 
 type HCompetitionListResponse struct {
-	Competitions []data.Competition `json:"competitions"`
+	Competitions []data.Competition
 }
 
 //

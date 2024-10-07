@@ -127,3 +127,25 @@ func RHandlerParentOrgList(parentOrg *IParentOrg) func(c *gin.Context) {
 		c.JSON(200, list)
 	}
 }
+
+func RHandlerTeamCreate(team *ITeam) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		print("Create team: ")
+
+		var HCreateTeamBody HTeamCreateBody
+		err := c.ShouldBindBodyWithJSON(&HCreateTeamBody)
+		if err != nil {
+			print(err.Error())
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+
+		insertedTeam, err := team.Create(context.Background(), HCreateTeamBody)
+		if err != nil {
+			print(err.Error())
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(201, insertedTeam)
+	}
+}
