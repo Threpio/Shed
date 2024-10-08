@@ -39,6 +39,8 @@ func main() {
 	ICompetition := NewICompetition(queries)
 	ICompetitionDay := NewICompetitionDay(queries)
 	IParentOrg := NewIParentOrg(queries)
+	ITeam := NewITeam(queries)
+	IRefs := NewIRefs(queries)
 
 	r := gin.Default()
 	r.GET("/ping", RHandlerPing())
@@ -51,6 +53,12 @@ func main() {
 
 	r.POST("/parentorganisations", RHandlerParentOrgCreate(IParentOrg))
 	r.GET("/parentorganisations", RHandlerParentOrgList(IParentOrg))
+
+	r.POST("/teams", RHandlerTeamCreate(ITeam))
+	r.GET("/teams", RHandlerTeamList(ITeam))
+
+	r.POST("/refs", RHandlerRefCreate(IRefs))
+	r.GET("/refs", RHandlerRefList(IRefs))
 
 	r.Run() // listen and serve on 0.0.0.0:8080
 }

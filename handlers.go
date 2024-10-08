@@ -149,3 +149,49 @@ func RHandlerTeamCreate(team *ITeam) func(c *gin.Context) {
 		c.JSON(201, insertedTeam)
 	}
 }
+
+func RHandlerTeamList(team *ITeam) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		print("List")
+		list, err := team.List(context.Background())
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, list)
+	}
+}
+
+func RHandlerRefCreate(refs *IRefs) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		print("Create ref: ")
+
+		var HCreateRefBody HRefCreateBody
+		err := c.ShouldBindBodyWithJSON(&HCreateRefBody)
+		if err != nil {
+			print(err.Error())
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+
+		insertedRef, err := refs.Create(context.Background(), HCreateRefBody)
+		if err != nil {
+			print(err.Error())
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(201, insertedRef)
+	}
+}
+
+func RHandlerRefList(refs *IRefs) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		print("List")
+		list, err := refs.List(context.Background())
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, list)
+	}
+}

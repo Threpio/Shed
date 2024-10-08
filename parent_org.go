@@ -30,6 +30,7 @@ func NewIParentOrg(query *data.Queries) *IParentOrg {
 }
 
 func (p *IParentOrg) Create(ctx context.Context, B HParentOrgCreateBody) (*HParentOrgCreateResponse, error) {
+	//TODO: Decide whether the names can be duplicated
 	insertedParentOrg, err := p.query.InsertParentOrganisation(ctx, B.Name)
 	if err != nil {
 		return nil, err

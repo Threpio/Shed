@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/threpio/shed/data"
+	"strings"
 )
 
 type HTeamCreateBody struct {
@@ -41,12 +42,12 @@ func (t *ITeam) Create(ctx context.Context, B HTeamCreateBody) (*HTeamCreateResp
 	//TODO: Check that the play category is specific from the list
 
 	// 'Mixed','Open','WomensPlus'
-	switch B.PlayCategory {
-	case "Mixed":
+	switch strings.ToLower(B.PlayCategory) {
+	case "mixed":
 		break
-	case "Open":
+	case "open":
 		break
-	case "WomensPlus":
+	case "womensPlus":
 		break
 	default:
 		return nil, errors.New("Play Category not valid")
@@ -73,4 +74,18 @@ func (t *ITeam) Create(ctx context.Context, B HTeamCreateBody) (*HTeamCreateResp
 	}
 
 	return insertedTeamResponse, nil
+}
+
+func (t *ITeam) List(ctx context.Context) (*HTeamListResponse, error) {
+	//TODO: Decide whether the names can be duplicated
+	list, err := t.query.ListTeams(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	listResponse := &HTeamListResponse{
+		Teams: list,
+	}
+
+	return listResponse, nil
 }
